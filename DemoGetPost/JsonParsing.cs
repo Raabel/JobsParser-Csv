@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
@@ -11,16 +12,18 @@ namespace GetPost
 {
     public class JsonParsing
     {
-       public static JToken first;
-       public static JToken second;
-       public static JToken third;
-       public static JToken fourth;
-       public static JToken fifth;
-       public static JToken sixth;
+       private JToken jId;
+       private JToken title;
+       private JToken companyName;
+       private JToken salary;
+       private JToken experience;
 
-       public static JObject responseValues;
+        public static JToken permalink;
+        ConcurrentQueue<JToken> cQueue = new ConcurrentQueue<JToken>();
 
-        public static async Task ParseJson(string responsebody)
+        public static JObject responseValues;
+        
+        public async Task ParseJson(string responsebody)
         {
             string ResponseBody = responsebody;
          
@@ -42,42 +45,49 @@ namespace GetPost
                         {
                             if (((JObject)jposts[i]).ContainsKey("jid"))
                             {
-                                first = jposts[i].Value<JToken>("jid");
+                                jId = jposts[i].Value<JToken>("jid");
                             }
 
                             if (((JObject)jposts[i]).ContainsKey("title"))
                             {
-                                second = jposts[i].Value<JToken>("title");
+                                title = jposts[i].Value<JToken>("title");
                             }
 
-                            if (((JObject)jposts[i]).ContainsKey("description"))
+                            if (((JObject)jposts[i]).ContainsKey("permaLink"))
                             {
-                                third = jposts[i].Value<JToken>("description").ToString().Replace(",", "").Replace("\n", "");
+                                permalink = jposts[i].Value<JToken>("permaLink").ToString().Insert(0, "https://www.rozee.pk/");
                             }
 
                             if (((JObject)jposts[i]).ContainsKey("company_name"))
                             {
-                                fourth = jposts[i].Value<JToken>("company_name");
+                                companyName = jposts[i].Value<JToken>("company_name");
                             }
 
-                            if (((JObject)jposts[i]).ContainsKey("salaryNHide_exact"))
+                            if (((JObject)jposts[i]).ContainsKey("salaryNHide_exact")) 
                             {
-                                fifth = jposts[i].Value<JToken>("salaryNHide_exact");
+                                salary = jposts[i].Value<JToken>("salaryNHide_exact");
                             }
 
                             if (((JObject)jposts[i]).ContainsKey("experience_text"))
                             {
-                                sixth = jposts[i].Value<JToken>("experience_text");
+                                experience = jposts[i].Value<JToken>("experience_text");
                             }
 
-                            string newline = string.Format("{0},{1},{2},{3},{4},{5}", first, second, third, fourth, fifth, sixth);
+                            
+                            cQueue.Enqueue(permalink);
+
+                            string newline = string.Format("{0},{1},{2},{3},{4},{5}", title, jId, permalink, companyName, salary, experience);
                             GenerateCsv.csv.AppendLine(newline);
                         }
                     }
                 }
             }
             
-            await Pagination.checkPagination();
+            MultithreadedRequests desc = new MultithreadedRequests();
+            desc.sendMultithreadedRequests(cQueue);
+            
+            Pagination pagination= new Pagination();
+            await pagination.checkPagination();
         }
 
     }

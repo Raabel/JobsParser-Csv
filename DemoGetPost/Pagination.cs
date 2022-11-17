@@ -9,7 +9,7 @@ namespace GetPost
 {
     internal class Pagination
     {
-        public static async Task checkPagination()
+        public async Task checkPagination()
         {
             if (JsonParsing.responseValues.ContainsKey("pagination"))
             {
@@ -24,7 +24,8 @@ namespace GetPost
                         if (pageList[iter].Value<JToken>("lang").ToString().Equals("Next")) 
                         {
                             string fpn = pageList[iter].Value<JToken>("fpn").ToString();
-                            await httpRequest.SendRequest(fpn);
+                            httpRequest request = new httpRequest();
+                            await request.SendRequest(fpn);
                         }
                     }
 

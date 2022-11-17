@@ -12,12 +12,18 @@ namespace GetPost
         static async Task Main()
         {
             Console.WriteLine("Please wait, we are fetching data of all Pages in the Business Development Category...");
-            await httpRequest.SendRequest("0");
 
-            GenerateCsv.genrateCSV();
+            httpRequest request = new httpRequest();
+            await request.SendRequest("0");
+
+            
+
+            GenerateCsv csv = new GenerateCsv();
+            csv.genrateCSV();
             Console.WriteLine("CSV Generated!");
 
-
+            //MultithreadedRequests multithreadedRequests = new MultithreadedRequests();
+            //multithreadedRequests.sendMultithreadedRequests();
         }
     }
    

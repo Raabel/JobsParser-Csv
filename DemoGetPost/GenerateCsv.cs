@@ -9,7 +9,7 @@ namespace GetPost
     internal class GenerateCsv
     {
         public static StringBuilder csv = new StringBuilder();
-        public static void genrateCSV()
+        public void genrateCSV()
         {
             File.WriteAllText("E:\\csvData\\output.csv", csv.ToString());
         }
