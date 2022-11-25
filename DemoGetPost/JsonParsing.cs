@@ -17,6 +17,7 @@ namespace GetPost
        private JToken companyName;
        private JToken salary;
        private JToken experience;
+       private JToken skills;
 
         public static JToken permalink;
         ConcurrentQueue<JToken> cQueue = new ConcurrentQueue<JToken>();
@@ -53,6 +54,11 @@ namespace GetPost
                                 title = jposts[i].Value<JToken>("title");
                             }
 
+                            //if (((JObject)jposts[i]).ContainsKey("skills"))
+                            //{
+                            //    skills = jposts[i].Value<JToken>("skills").ToString().Replace("[", "").Replace("]", "").Replace('"',' ').Replace(",", " ").Replace("\n", " ");
+                            //}
+
                             if (((JObject)jposts[i]).ContainsKey("permaLink"))
                             {
                                 permalink = jposts[i].Value<JToken>("permaLink").ToString().Insert(0, "https://www.rozee.pk/");
@@ -76,16 +82,37 @@ namespace GetPost
                             
                             cQueue.Enqueue(permalink);
 
-                            string newline = string.Format("{0},{1},{2},{3},{4},{5}", title, jId, permalink, companyName, salary, experience);
+                            string newline = string.Format("{0},{1},{2},{3},{4},{5}", jId, title , skills, companyName, salary, experience);
                             GenerateCsv.csv.AppendLine(newline);
                         }
                     }
                 }
             }
+
+            //MultithreadedRequests desc = new MultithreadedRequests();
+
+            //Thread[] threads = new Thread[5];
+            //for (int i = 0; i < threads.Length; i++)
+            //{
+            //    ThreadStart start = new ThreadStart(() => MultithreadedRequests.sendMultithreadedRequests(cQueue));
+            //    threads[i] = new Thread(start);
+            //    threads[i].Start();
+            //}
+
+            //for (int i = 0; i < threads.Length; i++)
+            //{
+            //    threads[i].Join();
+            //}
             
-            MultithreadedRequests desc = new MultithreadedRequests();
-            desc.sendMultithreadedRequests(cQueue);
-            
+
+            //Thread t1 = new Thread(() => MultithreadedRequests.sendMultithreadedRequests(cQueue));
+            //t1.Name = "t1";
+            //t1.Start();
+            //t1.Join();
+            //cQueue.TryDequeue(out permalink);
+
+            await MultithreadedRequests.sendMultithreadedRequests(cQueue);
+
             Pagination pagination= new Pagination();
             await pagination.checkPagination();
         }
